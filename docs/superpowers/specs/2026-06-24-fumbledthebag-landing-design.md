@@ -26,6 +26,9 @@ These are settled. Do not relitigate during planning or implementation.
 | **First-load experience** | Instant playable form. No hero, no scroll. Form is the landing, above the fold. | "Immediately going into it they can do it." Zero friction. |
 | **Result reveal** | Inline, same page. Card slides in below the form; form stays so users can tweak and re-check. URL updates in place to the canonical result URL. | Toy-like, fastest, no reload. |
 | **Aesthetic** | Light, playful, lighter colors, rounded edges, clear, not-serious. | Departure from the source spec's dark mode — chosen deliberately. The cheerful wrapper makes the regret funnier and fits the name. |
+| **Typography** | One typeface everywhere. Single font family across wordmark, form, card, and OG image — vary only weight/size, never the family. | Cohesive, clean, intentional look. The same font must be bundled into the `@vercel/og` renderer so the share image matches. |
+| **Amount input** | A **slider** is the primary control, with the live dollar value displayed (and editable). | User-requested. Dragging the bag size is tactile and playful. |
+| **Date input** | A **typed date field** (parsed to month + year). | User-requested. Type "Mar 2020" / "3/2020" rather than picking from dropdowns. |
 | **Card look** | Light & playful everywhere, including the OG share image. One look across screen and share. | Cohesive identity; the funny content carries the levity, not dark chrome. |
 | **Scope** | Landing page, fully working end-to-end (real Tako + real Claude + inline card + share). | Shippable single-page experience. |
 | **Sharing** | Industry-standard card-component sharing via server-rendered OG image unfurl. | The artifact IS the share. |
@@ -102,6 +105,7 @@ Keep files small and focused (per coding-style rules). Suggested modules:
 - `lib/roast.ts` — Claude call + defensive JSON parse + hardcoded fallback set.
 - `lib/cache.ts` — Redis get/set wrappers + key builders + `gainBucket`.
 - `lib/format.ts` — money/multiple/percent formatters.
+- `lib/parse-date.ts` — parse the typed date field (`"Mar 2020"`, `"March 2020"`, `"3/2020"`, `"2020-03"`, etc.) → `{ month, year }` or a clear parse error; clamp year to range, ignore any day.
 - `components/BagForm.tsx` — the form (ticker input + preset chips, month/year dropdowns, amount input + quick chips, submit).
 - `components/BagCard.tsx` — the single card component reused by the live page AND the OG renderer.
 - `components/TickerEmbedModal.tsx` — modal wrapping Tako's `embed_url` iframe.
@@ -119,8 +123,10 @@ Keep files small and focused (per coding-style rules). Suggested modules:
 
    [NVDA] [TSLA] [AAPL] [BTC] [GME] [AMZN] [MSTR] [PLTR]   ← preset chips (rounded pills)
    ┌──────────────────────────────────────────────┐
-   │  ticker [______]    when [Mar ▾] [2020 ▾]      │
-   │  amount [$10,000]   ·  $100   $1k   $10k        │
+   │  ticker [______]    when [ Mar 2020 ]          │  ← typed date field
+   │                                                │
+   │  amount        $10,000                         │  ← live value, editable
+   │  ●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━○        │  ← slider (primary control)
    └──────────────────────────────────────────────┘
               (   CHECK MY BAG   )                  ← big rounded primary button
 
@@ -132,9 +138,8 @@ Keep files small and focused (per coding-style rules). Suggested modules:
 | Field  | Type        | UI                                | Notes |
 |--------|-------------|-----------------------------------|-------|
 | ticker | string      | text input + ~8 preset chips      | NVDA, TSLA, AAPL, BTC, GME, AMZN, MSTR, PLTR |
-| month  | 1–12        | dropdown                          | month names |
-| year   | 2015–(now-1)| dropdown                          | clamped to sane range |
-| amount | USD number  | input + quick chips $100/$1k/$10k | default $10,000 |
+| date   | month + year | **typed date field**, parsed to month + year | Accepts `"Mar 2020"`, `"March 2020"`, `"3/2020"`, `"2020-03"`. Day (if typed) is ignored — the math model is month+year only. Clamp year to 2015–(now-1); reject/normalize unparseable input with an inline hint. |
+| amount | USD number  | **slider** (primary) + editable value display | Default $10,000. Slider range ~$100–$100k on a friendly (e.g. log-ish) scale; the dollar value shown above the slider is also a directly-editable input so power users can type an exact figure. |
 
 ### Page states
 
@@ -146,6 +151,8 @@ Keep files small and focused (per coding-style rules). Suggested modules:
 ### Visual language
 
 Light background, lighter/soft color palette, generously rounded corners, soft shadows, clear big friendly type, gentle motion (slide-in, count-up, bounce on chips). Green for gains; a wry muted red for losses. Avoid generic-template feel — intentional playful identity. (Implementation phase uses the artifact-design / frontend-design taste guidance.)
+
+**One typeface everywhere.** A single font family is used across the wordmark, form, card, and share image — hierarchy comes from weight and size only, never from switching families. The same font file is bundled into the `@vercel/og` renderer so the OG PNG matches the on-screen card exactly.
 
 ---
 
@@ -221,9 +228,9 @@ Exactly per source spec §8: `claude-sonnet-4-6`, `max_tokens: 1000`, strict JSO
 
 ## 10. Testing
 
-- **Unit (priority):** `lib/bag-math.ts` — `toYearMonth` across all label formats, `pickStart` snapping (exact / nearest-after / IPO-after), `computeBag` math incl. negative returns and huge multiples. `lib/roast.ts` defensive parser (fenced JSON, malformed, wrong item count → fallback). `lib/format.ts` formatters.
+- **Unit (priority):** `lib/bag-math.ts` — `toYearMonth` across all label formats, `pickStart` snapping (exact / nearest-after / IPO-after), `computeBag` math incl. negative returns and huge multiples. `lib/roast.ts` defensive parser (fenced JSON, malformed, wrong item count → fallback). `lib/format.ts` formatters. `lib/parse-date.ts` across accepted formats + unparseable input + year clamping.
 - **Integration:** `/api/bagcheck` (mock Tako: happy path, NO_DATA, IPO_AFTER, looser-query retry), `/api/roast` (mock Claude: valid, malformed→fallback, reroll excludes).
-- **Component:** `BagCard` across states (gain, loss, snapped fine-print, huge multiple); `BagForm` validation/clamping.
+- **Component:** `BagCard` across states (gain, loss, snapped fine-print, huge multiple); `BagForm` validation/clamping, slider ↔ editable-value sync, typed-date parsing/hint.
 - **OG smoke:** `/api/og/...` returns a valid PNG for a known input.
 
 ---
