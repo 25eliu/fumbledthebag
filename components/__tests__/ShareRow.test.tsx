@@ -14,13 +14,21 @@ describe("ShareRow", () => {
   });
 
   it("copies the link to the clipboard", async () => {
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.assign(navigator, { clipboard: { writeText } });
+    // user-event v14 installs its own navigator.clipboard stub during setup(),
+    // so install the mock AFTER setup() with a configurable property so it wins,
+    // then restore the original descriptor afterward.
     const user = userEvent.setup();
-    render(<ShareRow {...props} />);
-    await user.click(screen.getByRole("button", { name: /copy link/i }));
-    expect(writeText).toHaveBeenCalledWith(props.resultUrl);
-    expect(await screen.findByText(/copied/i)).toBeInTheDocument();
+    const original = Object.getOwnPropertyDescriptor(navigator, "clipboard");
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+    try {
+      render(<ShareRow {...props} />);
+      await user.click(screen.getByRole("button", { name: /copy link/i }));
+      expect(writeText).toHaveBeenCalledWith(props.resultUrl);
+      expect(await screen.findByText(/copied/i)).toBeInTheDocument();
+    } finally {
+      if (original) Object.defineProperty(navigator, "clipboard", original);
+    }
   });
 
   it("offers a download of the OG image", () => {
