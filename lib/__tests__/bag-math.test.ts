@@ -54,6 +54,18 @@ describe("computeBag", () => {
     expect("error" in r && r.error).toBe("NO_DATA");
   });
 
+  it("sorts an out-of-order series before snapping", () => {
+    const unsorted: TakoPoint[] = [
+      { x: "2024-01", y: 100 },
+      { x: "2020-01", y: 5 },
+      { x: "2020-03", y: 8 },
+    ];
+    const r = computeBag(unsorted, 2020, 1, 1000);
+    if ("error" in r) throw new Error("unexpected error");
+    expect(r.startDateActual).toBe("2020-01");
+    expect(r.currentPrice).toBe(100);
+  });
+
   it("detects a loss", () => {
     const losing: TakoPoint[] = [{ x: "2021-01", y: 100 }, { x: "2024-01", y: 31 }];
     const r = computeBag(losing, 2021, 1, 10000);

@@ -48,6 +48,11 @@ export function computeBag(
 
   if (norm.length === 0) return { error: "NO_DATA", message: "No usable price data for that ticker." };
 
+  // Tako series ordering is not guaranteed (Phase-0 spike deferred). Sort
+  // ascending by ym so find/snap and current-price selection are correct.
+  // Zero-padded "YYYY-MM" sorts lexicographically identical to chronological.
+  norm.sort((a, b) => (a.ym < b.ym ? -1 : a.ym > b.ym ? 1 : 0));
+
   const target = `${year}-${String(month).padStart(2, "0")}`;
   const start = norm.find((p) => p.ym === target) ?? norm.find((p) => p.ym >= target) ?? norm[0];
   const current = norm[norm.length - 1];
