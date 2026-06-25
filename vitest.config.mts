@@ -5,5 +5,5 @@ import path from "node:path";
 export default defineConfig({
   plugins: [react()],
   test: { environment: "jsdom", setupFiles: ["./vitest.setup.ts"], globals: true },
-  resolve: { alias: { "@": path.resolve(__dirname, ".") } },
+  resolve: { alias: { "@": path.resolve(__dirname, "."), "framer-motion": path.resolve(__dirname, "./__mocks__/framer-motion.tsx") } },
 });
