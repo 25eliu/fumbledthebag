@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { parseDate } from "@/lib/parse-date";
 import { companyName } from "@/lib/ticker-search";
@@ -15,21 +15,35 @@ const MIN = 100, MAX = 100_000;
 const toAmount = (s: number) => Math.max(MIN, Math.round((MIN * Math.pow(MAX / MIN, s / 1000)) / 100) * 100);
 const toSlider = (a: number) => Math.round((Math.log(Math.min(MAX, Math.max(MIN, a)) / MIN) / Math.log(MAX / MIN)) * 1000);
 
-// inline date blank (mirrors the ticker blank's styling); sizes via the `size` attr
+// inline date blank (mirrors the ticker blank's styling); width tracks the text
+// so the highlight hugs the date at any length ("Mar 2020", "September 2020", …)
 function DateBlank({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const placeholder = "Mar 2020";
-  const size = Math.max(8, value.length);
+  const sizerRef = useRef<HTMLSpanElement>(null);
+  const [width, setWidth] = useState<string | number>(`${Math.max(8, value.length)}ch`);
+  useEffect(() => {
+    if (sizerRef.current) setWidth(sizerRef.current.offsetWidth);
+  }, [value]);
   return (
-    <input
-      value={value}
-      size={size}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      aria-label="when"
-      spellCheck={false}
-      autoComplete="off"
-      className="border-b-[3px] border-accent bg-accent/20 px-1 text-center align-baseline font-semibold tracking-tight text-ink caret-ink outline-none transition-colors placeholder:text-ink/25 focus:bg-accent/40"
-    />
+    <span className="relative inline-block align-baseline">
+      <span
+        ref={sizerRef}
+        aria-hidden
+        className="pointer-events-none invisible absolute left-0 top-0 whitespace-pre px-1 font-semibold tracking-tight"
+      >
+        {value || placeholder}
+      </span>
+      <input
+        value={value}
+        style={{ width }}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        aria-label="when"
+        spellCheck={false}
+        autoComplete="off"
+        className="border-b-[3px] border-accent bg-accent/20 px-1 text-center font-semibold tracking-tight text-ink caret-ink outline-none transition-colors placeholder:text-ink/25 focus:bg-accent/40"
+      />
+    </span>
   );
 }
 

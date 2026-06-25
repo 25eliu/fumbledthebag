@@ -24,9 +24,16 @@ export default function TickerBlank({ value, onChange, placeholder = "a ticker",
   const cache = useRef<Map<string, TickerCard>>(new Map());
   const fetchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wrapRef = useRef<HTMLSpanElement>(null);
+  const sizerRef = useRef<HTMLSpanElement>(null);
+  const [width, setWidth] = useState<string | number>(`${Math.max(4, (value || placeholder).length)}ch`);
 
   const suggestions = open && value.trim() ? searchTickers(value) : [];
-  const size = Math.max(4, (value || placeholder).length);
+
+  // size the input to the actual rendered text width so the highlight hugs the
+  // word at any length (the `size` attr under-measures the wide Fredoka font)
+  useEffect(() => {
+    if (sizerRef.current) setWidth(sizerRef.current.offsetWidth);
+  }, [value, placeholder]);
 
   // close on outside click
   useEffect(() => {
@@ -87,10 +94,18 @@ export default function TickerBlank({ value, onChange, placeholder = "a ticker",
 
   return (
     <span ref={wrapRef} className="relative inline-block align-baseline">
+      {/* invisible mirror of the input text to measure exact width */}
+      <span
+        ref={sizerRef}
+        aria-hidden
+        className="pointer-events-none invisible absolute left-0 top-0 whitespace-pre px-1 font-semibold uppercase tracking-tight"
+      >
+        {value || placeholder}
+      </span>
       <input
         value={value}
         autoFocus={autoFocus}
-        size={size}
+        style={{ width }}
         onChange={(e) => {
           onChange(e.target.value.toUpperCase());
           setOpen(true);
