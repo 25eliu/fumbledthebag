@@ -38,7 +38,8 @@ export const motion = new Proxy(
 ) as Record<string, ReturnType<typeof createMotionComponent>>;
 
 // Other framer-motion exports used in lib/motion.ts
-export const useReducedMotion = () => false;
+// Return true in test environment so animations (e.g. useCountUp) skip to final value immediately.
+export const useReducedMotion = () => true;
 export const useAnimation = () => ({ start: () => {}, stop: () => {} });
 export const useInView = () => false;
 export const useScroll = () => ({ scrollY: { get: () => 0 } });
