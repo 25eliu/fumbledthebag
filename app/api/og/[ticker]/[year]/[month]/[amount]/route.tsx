@@ -30,7 +30,9 @@ export async function GET(request: Request, { params }: { params: Params }) {
     body: JSON.stringify(values),
     cache: "no-store",
   });
-  const data = (await res.json()) as BagResult | BagError;
+  const data = (res.ok
+    ? await res.json()
+    : { error: "NO_DATA", message: "Couldn’t load that bag." }) as BagResult | BagError;
 
   const semibold = loadFont("Fredoka-SemiBold.ttf");
   const bold = loadFont("Fredoka-Bold.ttf");
