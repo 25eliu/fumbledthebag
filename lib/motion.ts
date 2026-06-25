@@ -39,6 +39,7 @@ export function useCountUp(target: number, durationMs = 900): number {
 
   useEffect(() => {
     if (reduce) { setValue(target); return; }
+    setValue(0); // restart the count-up from 0 whenever target changes
     let raf = 0;
     const start = performance.now();
     const tick = (now: number) => {
