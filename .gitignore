@@ -1,0 +1,9 @@
+node_modules
+.next
+.env*.local
+.env
+*.tsbuildinfo
+next-env.d.ts
+
+# planning artifacts — keep the repo/GitHub clean
+docs/superpowers/
