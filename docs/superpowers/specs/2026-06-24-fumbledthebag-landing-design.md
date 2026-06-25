@@ -34,13 +34,15 @@ These are settled. Do not relitigate during planning or implementation.
 | **Sharing** | Industry-standard card-component sharing via server-rendered OG image unfurl. | The artifact IS the share. |
 | **Caching** | Lean Redis caching included at launch (Tako series only). | Cheap insurance against torching Tako credits on a viral spike. |
 | **Comparison engine** | **No LLM.** A hand-curated list of items (icon + name + price + blurb + scale) in one editable file, plus a **seeded randomizer** that mixes a few items by scale. | User owns the comparisons by editing one file; no Anthropic dependency, no LLM bill, instant + reproducible. |
+| **Ticker → Tako card** | **Hover** the ticker → a themed Tako card preview appears in a popover; **click/tap** → full interactive Tako embed modal. Tako requested in **light theme** to match the app. | User wants to see the real Tako chart on hover, themed consistently — not only on click. |
+| **Motion** | Every reveal/swap/hover is **smooth and polished** — a shared, consistent motion system (easing, durations, spring), GPU-friendly transforms, respects `prefers-reduced-motion`. | Explicit quality bar: the feel of the toy is part of the product. |
 
 ### Fixed tech (from source spec, unchanged)
 
 - **Next.js 14 (App Router) + TypeScript + Tailwind.** Server Route Handlers mandatory — API keys never touch the client.
 - **Vercel** hosting + `@vercel/og` (Satori) for dynamic share images.
 - **Upstash Redis** (or Vercel KV) for caching.
-- **Tako** is the only market-data source. The funny comparisons come from a **local curated list** (no LLM, no Anthropic API).
+- **Tako** is the only market-data source. The funny comparisons come from a **local curated list** (no LLM, no Anthropic API). Tako requests use **light theme** (`image_dark_mode: false`) so the returned card/chart matches the app.
 - Icons = **emoji** for MVP (render in OG/Satori; bundle Noto Color Emoji or Twemoji SVGs).
 - Env vars (server only): `TAKO_API_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`.
 
@@ -80,7 +82,7 @@ pickItems(gain, seed, exclude[])  — pure function, runs client-side AND in the
    └─ seeded randomizer over the local curated list → 3 items mixed by scale, qty = gain / price
    ▼
 Card renders inline: header • big count-up number • multiple • 3 icon+thing rows •
-                     ticker chip (→ Tako embed modal) • share row
+                     ticker chip (hover → themed Tako card popover; click → embed modal) • share row
    ▼
 /api/og/[ticker]/[year]/[month]/[amount] → @vercel/og renders the SAME card as PNG
 ```
@@ -111,7 +113,8 @@ Keep files small and focused (per coding-style rules). Suggested modules:
 - `lib/parse-date.ts` — parse the typed date field (`"Mar 2020"`, `"March 2020"`, `"3/2020"`, `"2020-03"`, etc.) → `{ month, year }` or a clear parse error; clamp year to range, ignore any day.
 - `components/BagForm.tsx` — the form (ticker input + preset chips, month/year dropdowns, amount input + quick chips, submit).
 - `components/BagCard.tsx` — the single card component reused by the live page AND the OG renderer.
-- `components/TickerEmbedModal.tsx` — modal wrapping Tako's `embed_url` iframe.
+- `components/TickerTakoCard.tsx` — the ticker interaction. **Hover** (desktop) → a themed popover previewing the Tako card (light `image_url`, lazy-loaded, fades in). **Click/tap** (and the only path on touch devices) → full modal wrapping Tako's `embed_url` iframe (light theme), with a polished open/close transition and focus trap.
+- `lib/motion.ts` — the shared motion system: standard durations, easing curves, and spring config reused by every animated component; honors `prefers-reduced-motion`.
 - `components/ShareRow.tsx` — Share to X / Copy link / Download.
 
 ---
@@ -156,6 +159,18 @@ Keep files small and focused (per coding-style rules). Suggested modules:
 Light background, lighter/soft color palette, generously rounded corners, soft shadows, clear big friendly type, gentle motion (slide-in, count-up, bounce on chips). Green for gains; a wry muted red for losses. Avoid generic-template feel — intentional playful identity. (Implementation phase uses the artifact-design / frontend-design taste guidance.)
 
 **One typeface everywhere.** A single font family is used across the wordmark, form, card, and share image — hierarchy comes from weight and size only, never from switching families. The same font file is bundled into the `@vercel/og` renderer so the OG PNG matches the on-screen card exactly.
+
+### Motion & polish (explicit quality bar)
+
+Every reveal, swap, and hover must feel **smooth and polished** — this is part of the product, not decoration. One shared motion system (`lib/motion.ts`) defines the durations, easing, and spring config so everything moves consistently.
+
+- **Card reveal:** slide-up + fade, gentle spring, no layout jank (reserve space / animate height cleanly).
+- **Hero number:** count-up on mount, eased (fast→slow), starts the instant the card appears.
+- **Reroll:** the 3 rows swap with a quick stagger (old out / new in), not a hard cut.
+- **Ticker hover:** themed Tako card popover fades/scales in after a small hover-intent delay (≈120ms) and out on leave — no flicker; the Tako image is lazy-loaded and the popover keeps a reserved size to avoid a pop-in jump.
+- **Ticker modal:** smooth scrim + scale/opacity open and close; focus trapped; closes on Esc / backdrop click.
+- **Chips & buttons:** subtle press/bounce and hover states.
+- **Performance:** transform/opacity only (GPU-friendly), 60fps target, no jank on the count-up. **Respects `prefers-reduced-motion`** — reduced users get instant/crossfade equivalents, never broken UI.
 
 ---
 
@@ -234,7 +249,7 @@ If the curated list ever can't fill 3 affordable items (tiny gain), show as many
 
 **Phase 1 — Core loop, unstyled.** Form → `/api/bagcheck` → `pickItems` over the curated list → plain inline result. Real numbers, real items from `data/items.ts`, reroll works.
 
-**Phase 2 — The card + page.** Build `BagCard` (light/playful), `BagForm`, ticker→embed modal, count-up, reroll animation, slide-in, the four page states. Apply the light/playful/rounded visual language.
+**Phase 2 — The card + page.** Build `BagCard` (light/playful), `BagForm`, `TickerTakoCard` (hover popover + click modal, light-themed), count-up, reroll animation, slide-in, the four page states. Stand up `lib/motion.ts` and apply the light/playful/rounded visual language and motion system throughout.
 
 **Phase 3 — Virality.** `/c/...` server route + `generateMetadata`, `/api/og/...` PNG, Share-to-X / Copy / Download, in-place URL rewrite from `/`.
 
@@ -248,11 +263,11 @@ If the curated list ever can't fill 3 affordable items (tiny gain), show as many
 
 - **Unit (priority):** `lib/bag-math.ts` — `toYearMonth` across all label formats, `pickStart` snapping (exact / nearest-after / IPO-after), `computeBag` math incl. negative returns and huge multiples. `lib/pick-items.ts` — determinism for a fixed seed, scale-mixing, affordability filter (`qty ≥ 1`), `exclude[]` honored on reroll, graceful 1–2 item fallback on tiny amounts. `lib/format.ts` formatters. `lib/parse-date.ts` across accepted formats + unparseable input + year clamping.
 - **Integration:** `/api/bagcheck` (mock Tako: happy path, NO_DATA, IPO_AFTER, looser-query retry).
-- **Component:** `BagCard` across states (gain, loss, snapped fine-print, huge multiple); `BagForm` validation/clamping, slider ↔ editable-value sync, typed-date parsing/hint.
+- **Component:** `BagCard` across states (gain, loss, snapped fine-print, huge multiple); `BagForm` validation/clamping, slider ↔ editable-value sync, typed-date parsing/hint; `TickerTakoCard` hover-popover open/close + click-to-modal + touch-tap path; `prefers-reduced-motion` falls back without breaking layout.
 - **OG smoke:** `/api/og/...` returns a valid PNG for a known input.
 
 ---
 
 ## 11. Definition of done
 
-A stranger lands on `fumbledthebag`, types `TSLA / Jan / 2019 / $5,000`, hits Check my bag, watches the card slide in with a real current value and 3 funny things, rerolls them once, clicks the ticker to see the live Tako chart, taps **Share to X** — and the tweet unfurls a crisp image of that exact light/playful card. All in under 5 seconds, even under load.
+A stranger lands on `fumbledthebag`, types `TSLA / Jan / 2019 / $5,000`, hits Check my bag, watches the card slide in with a real current value and 3 funny things, rerolls them once (rows swap smoothly), hovers the ticker to peek a themed Tako card and clicks it for the live interactive chart, taps **Share to X** — and the tweet unfurls a crisp image of that exact light/playful card. All in under 5 seconds, even under load.
