@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import { headers } from "next/headers";
 import BagApp from "@/components/BagApp";
 import { canonicalPath } from "@/lib/url";
@@ -23,15 +24,18 @@ function baseUrl(): string {
   return `${proto}://${host}`;
 }
 
-async function fetchResult(values: ReturnType<typeof parseParams>): Promise<BagResult | BagError> {
+const fetchResult = cache(async (values: ReturnType<typeof parseParams>): Promise<BagResult | BagError> => {
   const res = await fetch(`${baseUrl()}/api/bagcheck`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(values),
     cache: "no-store",
   });
+  if (!res.ok) {
+    return { error: "NO_DATA", message: "Couldn’t load that bag." };
+  }
   return res.json();
-}
+});
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const values = parseParams(params);
