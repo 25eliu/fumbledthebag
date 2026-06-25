@@ -24,7 +24,7 @@ describe("BagApp", () => {
 
     await user.clear(screen.getByLabelText(/when/i));
     await user.type(screen.getByLabelText(/when/i), "Mar 2020");
-    await user.click(screen.getByRole("button", { name: /check my bag/i }));
+    await user.click(screen.getByRole("button", { name: /see the damage/i }));
 
     expect(await screen.findByText("$234,100")).toBeInTheDocument();
     expect(replaceState).toHaveBeenCalledWith(null, "", "/c/NVDA/2020/3/10000");
@@ -36,7 +36,7 @@ describe("BagApp", () => {
     render(<BagApp initial={{ ticker: "NVDA", amount: 10000 }} />);
     await user.clear(screen.getByLabelText(/when/i));
     await user.type(screen.getByLabelText(/when/i), "Jan 2010");
-    await user.click(screen.getByRole("button", { name: /check my bag/i }));
+    await user.click(screen.getByRole("button", { name: /see the damage/i }));
     expect(await screen.findByText(/Earliest data is 2020-01/)).toBeInTheDocument();
   });
 

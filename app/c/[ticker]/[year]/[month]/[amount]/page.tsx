@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const values = parseParams(params);
   const data = await fetchResult(values);
   const ogImage = `/api/og/${values.ticker}/${values.year}/${values.month}/${values.amount}`;
-  const title = "error" in data ? "fumbledthebag 🧢" : buildOgTitle(data);
+  const title = "error" in data ? "fumbledthebag" : buildOgTitle(data);
   return {
     title,
     openGraph: { title, images: [{ url: ogImage, width: 1200, height: 630 }], url: canonicalPath(values) },

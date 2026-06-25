@@ -46,7 +46,7 @@ export async function GET(request: Request, { params }: { params: Params }) {
     return new ImageResponse(
       (
         <div style={{ display: "flex", width: "100%", height: "100%", background: "#FFFDF7", alignItems: "center", justifyContent: "center", fontFamily: "Fredoka", fontSize: 56, color: "#2B2A33" }}>
-          fumbledthebag 🧢
+          fumbledthebag
         </div>
       ),
       { width: 1200, height: 630, fonts }
@@ -60,8 +60,8 @@ export async function GET(request: Request, { params }: { params: Params }) {
   return new ImageResponse(
     (
       <div style={{ display: "flex", flexDirection: "column", width: "100%", height: "100%", background: "#FFFDF7", padding: 64, fontFamily: "Fredoka", color: "#2B2A33" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 28, fontWeight: 600, color: "#9b9aa1" }}>
-          <span>fumbledthebag</span><span>🧢</span>
+        <div style={{ display: "flex", fontSize: 28, fontWeight: 600, color: "#9b9aa1", letterSpacing: "0.15em" }}>
+          fumbledthebag
         </div>
         <div style={{ display: "flex", fontSize: 34, marginTop: 24, fontWeight: 600 }}>
           {formatMoney(data.amount)} in {data.ticker} · {monthName(sm)} {data.year}

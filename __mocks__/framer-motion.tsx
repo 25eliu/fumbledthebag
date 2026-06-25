@@ -27,12 +27,16 @@ function createMotionComponent(tag: string) {
   });
 }
 
-// motion object with common HTML elements
+// motion object with common HTML elements.
+// IMPORTANT: cache one component per tag so the component *type* is stable across
+// renders. Returning a fresh component each access makes React remount the whole
+// subtree every render (inputs lose focus, events drop).
+const motionCache: Record<string, ReturnType<typeof createMotionComponent>> = {};
 export const motion = new Proxy(
   {},
   {
     get(_target, prop: string) {
-      return createMotionComponent(prop);
+      return (motionCache[prop] ??= createMotionComponent(prop));
     },
   }
 ) as Record<string, ReturnType<typeof createMotionComponent>>;

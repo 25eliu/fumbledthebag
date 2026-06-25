@@ -30,8 +30,8 @@ export default function BagCard({ result, items, onReroll, tickerSlot, shareSlot
       animate="show"
       className="mx-auto w-full max-w-[420px] rounded-xl2 bg-white p-7 shadow-soft"
     >
-      <div className="flex items-center justify-between text-sm font-semibold text-ink/60">
-        <span>fumbledthebag</span><span aria-hidden>🧢</span>
+      <div className="text-sm font-semibold lowercase tracking-[0.15em] text-ink/40">
+        fumbledthebag
       </div>
 
       <p className="mt-4 text-lg leading-snug text-ink/80">

@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-import BagForm, { type BagFormValues } from "@/components/BagForm";
+import SentenceForm, { type BagFormValues } from "@/components/SentenceForm";
 import BagCard from "@/components/BagCard";
 import TickerTakoCard from "@/components/TickerTakoCard";
 import ShareRow from "@/components/ShareRow";
@@ -67,13 +67,12 @@ export default function BagApp({ initial, initialResult }: Props) {
   }
 
   return (
-    <main className="min-h-dvh px-4 py-10">
-      <header className="mb-8 text-center">
-        <h1 className="text-4xl font-bold">fumbledthebag 🧢</h1>
-        <p className="mt-1 text-ink/60">"I should've bought ___"</p>
-      </header>
+    <main className={`flex min-h-dvh flex-col px-4 ${result || error ? "py-10" : "justify-center py-10"}`}>
+      <div className="mb-10 text-center text-sm font-semibold lowercase tracking-[0.2em] text-ink/35">
+        fumbledthebag
+      </div>
 
-      <BagForm initial={initial} onSubmit={handleSubmit} pending={pending} />
+      <SentenceForm initial={initial} onSubmit={handleSubmit} pending={pending} />
 
       {error && (
         <div className="mx-auto mt-6 w-full max-w-[420px] rounded-xl2 bg-white p-6 text-center shadow-soft">
@@ -89,7 +88,7 @@ export default function BagApp({ initial, initialResult }: Props) {
             </button>
           )}
           {error.error === "NO_DATA" && (
-            <p className="mt-2 text-sm text-ink/55">Try a preset like NVDA, TSLA, or AAPL.</p>
+            <p className="mt-2 text-sm text-ink/55">Try a well-known ticker like NVDA, TSLA, or AAPL.</p>
           )}
         </div>
       )}

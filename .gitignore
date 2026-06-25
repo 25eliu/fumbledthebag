@@ -7,3 +7,4 @@ next-env.d.ts
 
 # planning artifacts — keep the repo/GitHub clean
 docs/superpowers/
+.gstack/

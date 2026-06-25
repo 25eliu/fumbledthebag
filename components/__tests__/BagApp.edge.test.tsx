@@ -28,7 +28,7 @@ describe("BagApp IPO_AFTER one-tap fix", () => {
     render(<BagApp initial={{ ticker: "NVDA", amount: 10000 }} />);
     await user.clear(screen.getByLabelText(/when/i));
     await user.type(screen.getByLabelText(/when/i), "Jan 2010");
-    await user.click(screen.getByRole("button", { name: /check my bag/i }));
+    await user.click(screen.getByRole("button", { name: /see the damage/i }));
 
     const fix = await screen.findByRole("button", { name: /try jan 2020/i });
     await user.click(fix);
