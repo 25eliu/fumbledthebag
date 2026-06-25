@@ -6,6 +6,7 @@ import TickerTakoCard from "@/components/TickerTakoCard";
 import ShareRow from "@/components/ShareRow";
 import { pickItems } from "@/lib/pick-items";
 import { canonicalPath, seedFor } from "@/lib/url";
+import { monthName } from "@/lib/format";
 import type { BagResult, BagError, PickedItem } from "@/lib/types";
 
 type Props = { initial?: Partial<BagFormValues>; initialResult?: BagResult };
@@ -28,7 +29,7 @@ export default function BagApp({ initial, initialResult }: Props) {
     return pickItems(comparisonAmount(result), seed, excluded);
   }, [result, rerolls, excluded]);
 
-  async function handleSubmit(values: BagFormValues) {
+  async function runCheck(values: BagFormValues) {
     setPending(true);
     setError(null);
     setResult(null);
@@ -51,6 +52,15 @@ export default function BagApp({ initial, initialResult }: Props) {
     }
   }
 
+  const [lastTicker, setLastTicker] = useState(initial?.ticker ?? "");
+  const [lastAmount, setLastAmount] = useState(initial?.amount ?? 10000);
+
+  function handleSubmit(values: BagFormValues) {
+    setLastTicker(values.ticker);
+    setLastAmount(values.amount);
+    void runCheck(values);
+  }
+
   function reroll() {
     setExcluded((prev) => [...prev, ...items.map((i) => i.name)]);
     setRerolls((n) => n + 1);
@@ -70,6 +80,14 @@ export default function BagApp({ initial, initialResult }: Props) {
           <p className="font-semibold text-ink/80">
             {error.error === "IPO_AFTER" ? "📅 " : "🤔 "}{error.message}
           </p>
+          {error.error === "IPO_AFTER" && error.suggestedYear && error.suggestedMonth && (
+            <button
+              onClick={() => runCheck({ ticker: lastTicker, amount: lastAmount, month: error.suggestedMonth!, year: error.suggestedYear! })}
+              className="mt-3 rounded-full bg-ink px-4 py-2 text-sm font-bold text-cream"
+            >
+              Try {monthName(error.suggestedMonth).slice(0, 3)} {error.suggestedYear}
+            </button>
+          )}
           {error.error === "NO_DATA" && (
             <p className="mt-2 text-sm text-ink/55">Try a preset like NVDA, TSLA, or AAPL.</p>
           )}

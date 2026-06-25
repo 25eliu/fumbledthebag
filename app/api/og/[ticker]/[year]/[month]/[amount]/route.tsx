@@ -7,6 +7,7 @@ import { formatMoney, formatMultiple, formatQty, monthName } from "@/lib/format"
 import type { BagResult, BagError } from "@/lib/types";
 
 export const runtime = "nodejs";
+export const revalidate = 86400; // cache the PNG at the edge for a day
 
 type Params = { ticker: string; year: string; month: string; amount: string };
 
