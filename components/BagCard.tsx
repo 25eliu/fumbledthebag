@@ -84,12 +84,20 @@ export default function BagCard({ result, items, onReroll, tickerSlot, shareSlot
             className="mt-2 space-y-2"
           >
             {items.map((item) => (
-              <motion.li key={item.name} variants={rowItem} className="flex items-start gap-3 rounded-2xl bg-cream px-3 py-2">
-                <span className="text-2xl" aria-hidden>{item.icon}</span>
-                <span>
-                  <span className="font-semibold">{formatQty(item.qty)} {item.name}</span>
-                  <span className="block text-sm text-ink/55">{item.blurb}</span>
-                </span>
+              <motion.li key={item.name} variants={rowItem}>
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-start gap-3 rounded-2xl bg-cream px-3 py-2 transition hover:bg-cream/70 hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink/40"
+                >
+                  <span className="text-2xl" aria-hidden>{item.icon}</span>
+                  <span className="flex-1">
+                    <span className="font-semibold">{formatQty(item.qty)} {item.name}</span>
+                    <span className="block text-sm text-ink/55">{item.blurb}</span>
+                  </span>
+                  <span className="self-center text-ink/30 transition group-hover:text-ink/60" aria-hidden>↗</span>
+                </a>
               </motion.li>
             ))}
           </motion.ul>

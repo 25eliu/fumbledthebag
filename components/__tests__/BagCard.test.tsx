@@ -10,7 +10,7 @@ const gain: BagResult = {
   embedUrl: "e", imageUrl: "i", confidence: "High",
 };
 const items: PickedItem[] = [
-  { icon: "🌯", name: "Chipotle burritos", price: 12, scale: "everyday", blurb: "Guac included.", qty: 1240 },
+  { icon: "🌯", name: "Chipotle burritos", price: 12, scale: "everyday", url: "https://www.chipotle.com/order", blurb: "Guac included.", qty: 1240 },
 ];
 
 describe("BagCard", () => {
@@ -27,6 +27,14 @@ describe("BagCard", () => {
     render(<BagCard result={loss} items={items} animate={false} />);
     expect(screen.getByText(/Good thing you didn't/i)).toBeInTheDocument();
     expect(screen.getByText("$3,100")).toBeInTheDocument();
+  });
+
+  it("renders each item as a new-tab link to its url", () => {
+    render(<BagCard result={gain} items={items} animate={false} />);
+    const link = screen.getByRole("link", { name: /Chipotle burritos/i });
+    expect(link).toHaveAttribute("href", "https://www.chipotle.com/order");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link.getAttribute("rel")).toContain("noopener");
   });
 
   it("frames items as individual alternatives", () => {

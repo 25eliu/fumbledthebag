@@ -11,8 +11,8 @@ export type TakoCard = {
   visualization_data?: { data: TakoPoint[]; viz_config?: Record<string, unknown> };
 };
 
-export type Scale = "everyday" | "aspirational" | "flex";
-export type Item = { icon: string; name: string; price: number; scale: Scale; blurb: string };
+export type Scale = "everyday" | "aspirational" | "flex" | "absurd";
+export type Item = { icon: string; name: string; price: number; scale: Scale; url: string; blurb: string };
 export type PickedItem = Item & { qty: number };
 
 export type BagMath = {

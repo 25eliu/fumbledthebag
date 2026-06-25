@@ -1,7 +1,7 @@
 import type { Item, PickedItem, Scale } from "@/lib/types";
 import { ITEMS } from "@/data/items";
 
-const SCALES: Scale[] = ["everyday", "aspirational", "flex"];
+const SCALES: Scale[] = ["everyday", "aspirational", "flex", "absurd"];
 
 function hashSeed(str: string): number {
   let h = 2166136261 >>> 0;

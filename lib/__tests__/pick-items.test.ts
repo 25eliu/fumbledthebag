@@ -1,16 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { pickItems } from "@/lib/pick-items";
+import { ITEMS } from "@/data/items";
+
+const minPrice = Math.min(...ITEMS.map((i) => i.price));
 
 describe("pickItems", () => {
   it("is deterministic for the same seed", () => {
-    const a = pickItems(50000, "NVDA|2020|1|10000");
-    const b = pickItems(50000, "NVDA|2020|1|10000");
-    expect(a).toEqual(b);
+    expect(pickItems(50000, "NVDA|2020|1|10000")).toEqual(pickItems(50000, "NVDA|2020|1|10000"));
   });
 
   it("returns 3 items for a healthy amount", () => {
-    const r = pickItems(500000, "seed");
-    expect(r).toHaveLength(3);
+    expect(pickItems(500000, "seed")).toHaveLength(3);
   });
 
   it("computes qty = floor(amount / price)", () => {
@@ -19,8 +19,9 @@ describe("pickItems", () => {
   });
 
   it("never includes an item the amount can't afford", () => {
-    const r = pickItems(50, "seed"); // only sub-$50 items qualify
-    for (const item of r) expect(item.price).toBeLessThanOrEqual(50);
+    const budget = minPrice + 1; // only the very cheapest items qualify
+    const r = pickItems(budget, "seed");
+    for (const item of r) expect(item.price).toBeLessThanOrEqual(budget);
     for (const item of r) expect(item.qty).toBeGreaterThanOrEqual(1);
   });
 
@@ -32,13 +33,20 @@ describe("pickItems", () => {
   });
 
   it("mixes scales when the budget allows", () => {
-    const r = pickItems(1000000, "varied-seed");
-    const scales = new Set(r.map((i) => i.scale));
+    const scales = new Set(pickItems(100000000, "varied-seed").map((i) => i.scale));
     expect(scales.size).toBeGreaterThanOrEqual(2);
   });
 
-  it("returns fewer than 3 when too little is affordable", () => {
-    const r = pickItems(6, "seed"); // only the $6 latte qualifies
-    expect(r.length).toBeLessThanOrEqual(1);
+  it("returns nothing when nothing is affordable", () => {
+    expect(pickItems(minPrice - 1, "seed")).toHaveLength(0);
+  });
+
+  it("every catalog item has an absolute https url", () => {
+    for (const item of ITEMS) expect(item.url).toMatch(/^https:\/\/.+/);
+  });
+
+  it("catalog covers all four tiers", () => {
+    const scales = new Set(ITEMS.map((i) => i.scale));
+    expect(scales).toEqual(new Set(["everyday", "aspirational", "flex", "absurd"]));
   });
 });
