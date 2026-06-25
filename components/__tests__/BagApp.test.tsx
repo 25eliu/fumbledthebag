@@ -27,7 +27,7 @@ describe("BagApp", () => {
     await user.click(screen.getByRole("button", { name: /check my bag/i }));
 
     expect(await screen.findByText("$234,100")).toBeInTheDocument();
-    expect(replaceState).toHaveBeenCalledWith(expect.anything(), "", "/c/NVDA/2020/3/10000");
+    expect(replaceState).toHaveBeenCalledWith(null, "", "/c/NVDA/2020/3/10000");
   });
 
   it("renders an IPO_AFTER error inline", async () => {

@@ -43,7 +43,7 @@ export default function BagApp({ initial, initialResult }: Props) {
       const data = (await res.json()) as BagResult | BagError;
       if ("error" in data) { setError(data); return; }
       setResult(data);
-      window.history.replaceState({}, "", canonicalPath(data));
+      window.history.replaceState(null, "", canonicalPath(data));
     } catch {
       setError({ error: "NO_DATA", message: "Something went wrong — try again." });
     } finally {
