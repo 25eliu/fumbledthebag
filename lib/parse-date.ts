@@ -11,8 +11,11 @@ export function parseDate(
   input: string,
   opts: { minYear?: number; maxYear?: number } = {}
 ): { month: number; year: number } | { error: string } {
-  const minYear = opts.minYear ?? 2015;
-  const maxYear = opts.maxYear ?? 2025;
+  // Sanity floor only — do NOT silently rewrite a plausible year (e.g. 2000).
+  // When a date predates a stock's available data, computeBag's IPO_AFTER path
+  // surfaces an honest "earliest data is …" prompt instead.
+  const minYear = opts.minYear ?? 1900;
+  const maxYear = opts.maxYear ?? 2026;
   const s = input.trim().toLowerCase();
   if (!s) return { error: "Enter a date like \"Mar 2020\"." };
 

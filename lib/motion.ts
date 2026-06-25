@@ -7,13 +7,31 @@ export const EASE = [0.22, 1, 0.36, 1] as const;
 export const SPRING: Transition = { type: "spring", stiffness: 320, damping: 30, mass: 0.8 };
 
 export const cardReveal: Variants = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: SPRING },
+  hidden: { opacity: 0, y: 16, scale: 0.98 },
+  show: { opacity: 1, y: 0, scale: 1, transition: SPRING },
 };
 
 export const rowStagger: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.06, delayChildren: 0.08 } },
+};
+
+// Parent for the card's left/right cells — reveals them in sequence after the card lands.
+export const sectionStagger: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.12, delayChildren: 0.12 } },
+};
+
+export const sectionItem: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: DURATION.base, ease: EASE } },
+};
+
+// Compact summary line shown once the form has receded.
+export const summaryBar: Variants = {
+  hidden: { opacity: 0, y: -6 },
+  show: { opacity: 1, y: 0, transition: { duration: DURATION.base, ease: EASE } },
+  exit: { opacity: 0, y: -6, transition: { duration: 0.12 } },
 };
 
 export const rowItem: Variants = {

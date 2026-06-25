@@ -28,6 +28,13 @@ export type BagMath = {
   isLoss: boolean;
 };
 
+export type Benchmark = {
+  label: string;
+  currentValue: number;
+  gain: number;
+  multiple: number;
+};
+
 export type BagResult = BagMath & {
   ticker: string;
   year: number;
@@ -36,6 +43,7 @@ export type BagResult = BagMath & {
   embedUrl: string;
   imageUrl: string;
   confidence?: string;
+  benchmark?: Benchmark;
 };
 
 export type BagErrorCode = "NO_DATA" | "IPO_AFTER" | "BAD_REQUEST";

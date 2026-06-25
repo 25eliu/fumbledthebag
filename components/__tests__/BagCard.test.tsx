@@ -29,6 +29,20 @@ describe("BagCard", () => {
     expect(screen.getByText("$3,100")).toBeInTheDocument();
   });
 
+  it("frames items as individual alternatives", () => {
+    render(<BagCard result={gain} items={items} animate={false} />);
+    expect(screen.getByText(/any one of these/i)).toBeInTheDocument();
+  });
+
+  it("renders the S&P 500 benchmark line when present", () => {
+    const withBench: BagResult = {
+      ...gain,
+      benchmark: { label: "the S&P 500", currentValue: 20000, gain: 10000, multiple: 2 },
+    };
+    render(<BagCard result={withBench} items={items} animate={false} />);
+    expect(screen.getByText(/S&P 500/)).toBeInTheDocument();
+  });
+
   it("renders the snapped fine-print", () => {
     render(<BagCard result={{ ...gain, snapped: true }} items={items} animate={false} />);
     expect(screen.getByText(/Closest data/i)).toBeInTheDocument();

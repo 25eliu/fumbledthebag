@@ -1,12 +1,11 @@
 "use client";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { xShareUrl } from "@/lib/url";
 import { pressable } from "@/lib/motion";
 
-type Props = { ticker: string; year: number; resultUrl: string; ogImageUrl: string };
+type Props = { ticker: string; resultUrl: string; ogImageUrl: string };
 
-export default function ShareRow({ ticker, year, resultUrl, ogImageUrl }: Props) {
+export default function ShareRow({ ticker, resultUrl, ogImageUrl }: Props) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -19,12 +18,6 @@ export default function ShareRow({ ticker, year, resultUrl, ogImageUrl }: Props)
 
   return (
     <div className="flex items-center justify-center gap-2">
-      <motion.a
-        {...pressable} href={xShareUrl(ticker, year, resultUrl)} target="_blank" rel="noopener noreferrer"
-        className="rounded-full bg-ink px-4 py-2 text-sm font-bold text-cream"
-      >
-        Share to X
-      </motion.a>
       <motion.button {...pressable} onClick={copy} className="rounded-full bg-white px-4 py-2 text-sm font-bold text-ink shadow-soft">
         {copied ? "Copied!" : "Copy link"}
       </motion.button>

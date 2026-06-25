@@ -4,13 +4,11 @@ import userEvent from "@testing-library/user-event";
 import ShareRow from "@/components/ShareRow";
 
 describe("ShareRow", () => {
-  const props = { ticker: "NVDA", year: 2020, resultUrl: "https://x.test/c/NVDA/2020/3/10000", ogImageUrl: "https://x.test/api/og/NVDA/2020/3/10000" };
+  const props = { ticker: "NVDA", resultUrl: "https://x.test/c/NVDA/2020/3/10000", ogImageUrl: "https://x.test/api/og/NVDA/2020/3/10000" };
 
-  it("links Share to X with the result url", () => {
+  it("does not render a Share to X button", () => {
     render(<ShareRow {...props} />);
-    const link = screen.getByRole("link", { name: /share to x/i });
-    expect(link).toHaveAttribute("href", expect.stringContaining("twitter.com/intent/tweet"));
-    expect(decodeURIComponent(link.getAttribute("href")!)).toContain(props.resultUrl);
+    expect(screen.queryByRole("link", { name: /share to x/i })).not.toBeInTheDocument();
   });
 
   it("copies the link to the clipboard", async () => {
