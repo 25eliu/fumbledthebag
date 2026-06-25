@@ -14,6 +14,8 @@ export default function TickerTakoCard({ ticker, embedUrl, imageUrl }: Props) {
   const enter = () => { hoverTimer.current = setTimeout(() => setHovered(true), 120); };
   const leave = () => { if (hoverTimer.current) clearTimeout(hoverTimer.current); setHovered(false); };
 
+  useEffect(() => () => { if (hoverTimer.current) clearTimeout(hoverTimer.current); }, []);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
