@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/lib/tako", () => ({ takoSearch: vi.fn(), fetchCardSeries: vi.fn() }));
+vi.mock("@/lib/yahoo", () => ({ fetchYahooSeries: vi.fn() }));
 vi.mock("@/lib/cache", () => ({
   bagKey: (t: string, y: number, m: number) => `bag:${t}:${y}:${m}`,
   cacheGet: vi.fn().mockResolvedValue(null),
@@ -9,6 +10,7 @@ vi.mock("@/lib/cache", () => ({
 
 import { POST } from "@/app/api/bagcheck/route";
 import { takoSearch, fetchCardSeries } from "@/lib/tako";
+import { fetchYahooSeries } from "@/lib/yahoo";
 
 function req(body: unknown) {
   return new Request("http://test/api/bagcheck", { method: "POST", body: JSON.stringify(body) });
@@ -25,7 +27,11 @@ const goodSeries = [
   { x: "2024-01-02 00:00:00+00:00", y: 100 },
 ];
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  // Default: Yahoo fallback finds nothing unless a test opts in.
+  (fetchYahooSeries as any).mockResolvedValue([]);
+});
 
 describe("POST /api/bagcheck", () => {
   it("returns a computed BagResult on the happy path", async () => {
@@ -37,6 +43,22 @@ describe("POST /api/bagcheck", () => {
     expect(json.ticker).toBe("NVDA");
     expect(json.multiple).toBe(20);
     expect(json.embedUrl).toBe("https://trytako.com/embed");
+    // Tako had data → Yahoo fallback is not consulted.
+    expect((fetchYahooSeries as any).mock.calls.length).toBe(0);
+  });
+
+  it("falls back to Yahoo when Tako has no chart card (e.g. MU)", async () => {
+    (takoSearch as any).mockResolvedValue(null); // no valid Tako chart card
+    (fetchYahooSeries as any).mockResolvedValue(goodSeries);
+    const res = await POST(req({ ticker: "MU", year: 2020, month: 1, amount: 1000 }));
+    const json = await res.json();
+    expect(res.status).toBe(200);
+    expect(json.ticker).toBe("MU");
+    expect(json.multiple).toBe(20);
+    // No Tako card → empty embed/image so the UI degrades to a plain chip.
+    expect(json.embedUrl).toBe("");
+    expect(json.imageUrl).toBe("");
+    expect((fetchYahooSeries as any).mock.calls.length).toBeGreaterThan(0);
   });
 
   it("returns 400 on malformed input", async () => {

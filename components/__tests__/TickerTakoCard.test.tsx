@@ -27,4 +27,11 @@ describe("TickerTakoCard", () => {
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
+
+  it("degrades to a plain chip when there is no embed (Yahoo fallback)", () => {
+    render(<TickerTakoCard ticker="MU" embedUrl="" imageUrl="" />);
+    // Visible ticker, but no interactive button / live-chart affordance.
+    expect(screen.getByText("MU")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /MU/ })).not.toBeInTheDocument();
+  });
 });

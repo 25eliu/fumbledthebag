@@ -57,15 +57,17 @@ export async function POST(request: Request) {
     }
   }
 
+  // `card` is null when the series came from the Yahoo fallback — there's no Tako
+  // embed/image, so the ticker chip degrades to a plain (non-interactive) chip.
   const result: BagResult = {
     ticker: upper,
     year,
     month,
     amount,
     ...math,
-    embedUrl: card.embed_url,
-    imageUrl: card.image_url,
-    confidence: card.confidence,
+    embedUrl: card?.embed_url ?? "",
+    imageUrl: card?.image_url ?? "",
+    confidence: card?.confidence,
     ...(benchmark ? { benchmark } : {}),
   };
   return NextResponse.json(result);

@@ -11,6 +11,16 @@ export default function TickerTakoCard({ ticker, embedUrl, imageUrl }: Props) {
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
+  // No Tako card (e.g. a Yahoo-fallback ticker like MU) → no live chart to show.
+  // Render a plain, non-interactive chip instead of a broken image/iframe.
+  if (!embedUrl) {
+    return (
+      <span className="inline-flex items-center rounded-full bg-accent/70 px-2.5 py-0.5 font-bold text-ink">
+        {ticker}
+      </span>
+    );
+  }
+
   const enter = () => { hoverTimer.current = setTimeout(() => setHovered(true), 120); };
   const leave = () => { if (hoverTimer.current) clearTimeout(hoverTimer.current); setHovered(false); };
 
