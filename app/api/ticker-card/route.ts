@@ -29,7 +29,7 @@ export async function GET(request: Request) {
 
   let payload: TickerCard = { found: false, symbol };
   try {
-    const card = await takoSearch(`${symbol} stock price since 2020`);
+    const card = await takoSearch(`${symbol} stock price since 2020`, symbol);
     if (card) {
       payload = {
         found: true,

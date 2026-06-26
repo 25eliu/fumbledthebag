@@ -17,7 +17,10 @@ export async function fetchBenchmark(
   month: number,
   amount: number
 ): Promise<Benchmark | null> {
-  const loaded = await loadSeries(BENCHMARK_TICKER, year, month, { queries: benchmarkQueries(year) });
+  const loaded = await loadSeries(BENCHMARK_TICKER, year, month, {
+    queries: benchmarkQueries(year),
+    match: "S&P 500", // benchmark cards are titled "SPDR S&P 500 ETF Trust...", not "SPY"
+  });
   if (!loaded || loaded.series.length === 0) return null;
 
   const math = computeBag(loaded.series, year, month, amount);

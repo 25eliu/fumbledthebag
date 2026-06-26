@@ -50,8 +50,8 @@ describe("POST /api/bagcheck", () => {
     const res = await POST(req({ ticker: "ZZZZ", year: 2020, month: 1, amount: 1000 }));
     const json = await res.json();
     expect(json.error).toBe("NO_DATA");
-    // Two takoSearch calls: primary + looser retry
-    expect((takoSearch as any).mock.calls.length).toBe(2);
+    // Three takoSearch calls: primary + two looser retries (all return null)
+    expect((takoSearch as any).mock.calls.length).toBe(3);
   });
 
   it("returns NO_DATA when card is found but series is empty", async () => {

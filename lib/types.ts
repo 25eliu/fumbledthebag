@@ -7,6 +7,8 @@ export type TakoCard = {
   webpage_url: string;
   image_url: string;
   embed_url: string;
+  card_type?: string;
+  semantic_description?: string;
   confidence?: string;
   visualization_data?: { data: TakoPoint[]; viz_config?: Record<string, unknown> };
 };

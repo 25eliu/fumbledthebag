@@ -18,9 +18,10 @@ export async function loadSeries(
   ticker: string,
   year: number,
   month: number,
-  opts: { queries?: string[] } = {}
+  opts: { queries?: string[]; match?: string } = {}
 ): Promise<{ card: TakoCard; series: TakoPoint[] } | null> {
   const upper = ticker.toUpperCase();
+  const match = opts.match ?? upper;
   const key = bagKey(upper, year, month);
 
   const cached = await cacheGet<CachedSeries>(key);
@@ -31,13 +32,18 @@ export async function loadSeries(
 
   // Default phrasing resolves a stock ticker; callers (e.g. the S&P 500 benchmark)
   // can override when the bare ticker is ambiguous to Tako (SPY → "SpyCloud, Inc.").
-  const queries = opts.queries ?? [`${upper} stock price since ${year}`, `${upper} stock price`];
+  // Multiple phrasings maximize the chance of surfacing a valid price chart.
+  const queries = opts.queries ?? [
+    `${upper} stock price since ${year}`,
+    `${upper} stock price`,
+    `${upper} stock`,
+  ];
   console.log(`[loadSeries] cache MISS — calling Tako for ${upper}`);
   let card: TakoCard | null = null;
   for (const q of queries) {
-    card = await takoSearch(q);
+    card = await takoSearch(q, match);
     if (card) break;
-    console.log(`[loadSeries] no card for "${q}" — trying next phrasing`);
+    console.log(`[loadSeries] no valid chart card for "${q}" — trying next phrasing`);
   }
   if (!card) return null;
 
